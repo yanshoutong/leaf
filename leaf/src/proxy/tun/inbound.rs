@@ -240,7 +240,10 @@ pub fn new(
         futs.push(Box::pin(async move {
             while let Some(pkt) = stack_stream.next().await {
                 if let Ok(pkt) = pkt {
-                    tun_sink.send(TunPacket::new(pkt)).await.unwrap();
+                    // tun_sink.send(TunPacket::new(pkt)).await.unwrap();
+                    if let Err(e) = tun_sink.send(TunPacket::new(pkt)).await {
+                        eprintln!("error swallowed - {}", e);
+                    }
                 }
             }
         }));
@@ -249,7 +252,10 @@ pub fn new(
         futs.push(Box::pin(async move {
             while let Some(pkt) = tun_stream.next().await {
                 if let Ok(pkt) = pkt {
-                    stack_sink.send(pkt.get_bytes().to_vec()).await.unwrap();
+                    // stack_sink.send(pkt.get_bytes().to_vec()).await.unwrap();
+                    if let Err(e) = stack_sink.send(pkt.get_bytes().to_vec()).await {
+                        eprintln!("error swallowed - {}", e);
+                    }
                 }
             }
         }));
